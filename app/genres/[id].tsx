@@ -13,10 +13,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { getGenre, deleteGenre } from '@/services/api';
 import { GenreDTO } from '@/types';
 import { colors } from '@/constants/theme';
+import { useRole } from '@/services/role';
 
 export default function GenreDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const role = useRole();
+  const isAdmin = role === 'ADMIN';
   const [genre, setGenre] = useState<GenreDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,19 +76,21 @@ export default function GenreDetailScreen() {
         <DetailRow label="Descripción" value={genre.description || 'Sin descripción'} />
       </View>
 
-      <View style={styles.actions}>
-        <TouchableOpacity
-          style={[styles.actionBtn, styles.editBtn]}
-          onPress={() => router.push({ pathname: '/genres/form', params: { id: genre.id } })}
-        >
-          <Ionicons name="create-outline" size={20} color="#fff" />
-          <Text style={styles.actionText}>Editar</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionBtn, styles.deleteBtn]} onPress={handleDelete}>
-          <Ionicons name="trash-outline" size={20} color="#fff" />
-          <Text style={styles.actionText}>Eliminar</Text>
-        </TouchableOpacity>
-      </View>
+      {isAdmin && (
+        <View style={styles.actions}>
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.editBtn]}
+            onPress={() => router.push({ pathname: '/genres/form', params: { id: genre.id } })}
+          >
+            <Ionicons name="create-outline" size={20} color="#fff" />
+            <Text style={styles.actionText}>Editar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.actionBtn, styles.deleteBtn]} onPress={handleDelete}>
+            <Ionicons name="trash-outline" size={20} color="#fff" />
+            <Text style={styles.actionText}>Eliminar</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </ScrollView>
   );
 }

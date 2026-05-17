@@ -13,10 +13,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { getAuthor, deleteAuthor } from '@/services/api';
 import { AuthorDTO } from '@/types';
 import { colors } from '@/constants/theme';
+import { useRole } from '@/services/role';
 
 export default function AuthorDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const role = useRole();
+  const isAdmin = role === 'ADMIN';
   const [author, setAuthor] = useState<AuthorDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,19 +76,21 @@ export default function AuthorDetailScreen() {
         <DetailRow label="Fecha de nacimiento" value={author.birthDate || 'N/A'} />
       </View>
 
-      <View style={styles.actions}>
-        <TouchableOpacity
-          style={[styles.actionBtn, styles.editBtn]}
-          onPress={() => router.push({ pathname: '/authors/form', params: { id: author.id } })}
-        >
-          <Ionicons name="create-outline" size={20} color="#fff" />
-          <Text style={styles.actionText}>Editar</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionBtn, styles.deleteBtn]} onPress={handleDelete}>
-          <Ionicons name="trash-outline" size={20} color="#fff" />
-          <Text style={styles.actionText}>Eliminar</Text>
-        </TouchableOpacity>
-      </View>
+      {isAdmin && (
+        <View style={styles.actions}>
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.editBtn]}
+            onPress={() => router.push({ pathname: '/authors/form', params: { id: author.id } })}
+          >
+            <Ionicons name="create-outline" size={20} color="#fff" />
+            <Text style={styles.actionText}>Editar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.actionBtn, styles.deleteBtn]} onPress={handleDelete}>
+            <Ionicons name="trash-outline" size={20} color="#fff" />
+            <Text style={styles.actionText}>Eliminar</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </ScrollView>
   );
 }

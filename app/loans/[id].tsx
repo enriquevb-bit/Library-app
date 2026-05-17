@@ -13,10 +13,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { getLoan, returnLoan, deleteLoan } from '@/services/api';
 import { LoanDTO } from '@/types';
 import { colors, LOAN_STATE_COLORS, LOAN_STATE_LABELS } from '@/constants/theme';
+import { useRole } from '@/services/role';
 
 export default function LoanDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const role = useRole();
+  const isAdmin = role === 'ADMIN';
   const [loan, setLoan] = useState<LoanDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -144,25 +147,27 @@ export default function LoanDetailScreen() {
         </View>
       )}
 
-      <View style={styles.actions}>
-        {(loan.loanState === 'ACTIVE' || loan.loanState === 'OVERDUE') && (
-          <TouchableOpacity
-            style={[styles.actionBtn, styles.returnBtn]}
-            onPress={handleReturn}
-          >
-            <Ionicons name="checkmark-circle-outline" size={20} color="#fff" />
-            <Text style={styles.actionText}>Devolver préstamo</Text>
-          </TouchableOpacity>
-        )}
+      {isAdmin && (
+        <View style={styles.actions}>
+          {(loan.loanState === 'ACTIVE' || loan.loanState === 'OVERDUE') && (
+            <TouchableOpacity
+              style={[styles.actionBtn, styles.returnBtn]}
+              onPress={handleReturn}
+            >
+              <Ionicons name="checkmark-circle-outline" size={20} color="#fff" />
+              <Text style={styles.actionText}>Devolver préstamo</Text>
+            </TouchableOpacity>
+          )}
 
-        <TouchableOpacity
-          style={[styles.actionBtn, styles.deleteBtn]}
-          onPress={handleDelete}
-        >
-          <Ionicons name="trash-outline" size={20} color="#fff" />
-          <Text style={styles.actionText}>Eliminar</Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.deleteBtn]}
+            onPress={handleDelete}
+          >
+            <Ionicons name="trash-outline" size={20} color="#fff" />
+            <Text style={styles.actionText}>Eliminar</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </ScrollView>
   );
 }

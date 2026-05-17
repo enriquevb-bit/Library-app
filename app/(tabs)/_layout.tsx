@@ -2,6 +2,7 @@ import { View, StyleSheet } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/theme';
+import { useRole } from '@/services/role';
 
 function TabIcon({ name, color, focused }: { name: keyof typeof Ionicons.glyphMap; color: string; focused: boolean }) {
   return (
@@ -12,6 +13,8 @@ function TabIcon({ name, color, focused }: { name: keyof typeof Ionicons.glyphMa
 }
 
 export default function TabLayout() {
+  const role = useRole();
+  const isMember = role === 'MEMBER';
   return (
     <Tabs
       screenOptions={{
@@ -56,6 +59,7 @@ export default function TabLayout() {
         name="members"
         options={{
           title: 'Miembros',
+          href: isMember ? null : '/(tabs)/members',
           tabBarIcon: ({ color, focused }) => (
             <TabIcon name="people" color={color} focused={focused} />
           ),

@@ -10,14 +10,17 @@ import {
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { getLoans } from '@/services/api';
+import { getLoans, getMyLoans } from '@/services/api';
 import { LoanDTO, LoanState } from '@/types';
 import { colors, LOAN_STATE_COLORS, LOAN_STATE_LABELS } from '@/constants/theme';
+import { useRole } from '@/services/role';
 
 const FILTERS: (LoanState | 'ALL')[] = ['ALL', 'ACTIVE', 'RETURNED', 'OVERDUE', 'CANCELLED'];
 
 export default function LoansScreen() {
   const router = useRouter();
+  const role = useRole();
+  const isAdmin = role === 'ADMIN';
   const [loans, setLoans] = useState<LoanDTO[]>([]);
   const [filter, setFilter] = useState<LoanState | 'ALL'>('ALL');
   const [page, setPage] = useState(0);
@@ -26,15 +29,16 @@ export default function LoansScreen() {
   const [error, setError] = useState<string | null>(null);
   const listRef = useRef<FlatList>(null);
 
-  const loadLoans = useCallback(async (pageNum = 0, state: LoanState | 'ALL' = 'ALL') => {
+  const loadLoans = useCallback(async (pageNum = 0, state: LoanState | 'ALL' = 'ALL', admin = true) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getLoans({
+      const params = {
         loanState: state === 'ALL' ? undefined : state,
         pageNumber: pageNum + 1,
         pageSize: 5,
-      });
+      };
+      const data = admin ? await getLoans(params) : await getMyLoans(params);
       setLoans(data.content);
       setTotalPages(data.totalPages);
       setPage(pageNum);
@@ -47,18 +51,18 @@ export default function LoansScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      loadLoans(0, filter);
-    }, [filter, loadLoans])
+      if (role) loadLoans(0, filter, role === 'ADMIN');
+    }, [filter, loadLoans, role])
   );
 
   const handleFilter = (state: LoanState | 'ALL') => {
     setFilter(state);
-    loadLoans(0, state);
+    loadLoans(0, state, isAdmin);
   };
 
   const goToPage = (pageNum: number) => {
     if (pageNum >= 0 && pageNum < totalPages && !loading) {
-      loadLoans(pageNum, filter);
+      loadLoans(pageNum, filter, isAdmin);
       listRef.current?.scrollToOffset({ offset: 0, animated: false });
     }
   };
@@ -157,12 +161,14 @@ export default function LoansScreen() {
         </View>
       )}
 
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => router.push('/loans/create')}
-      >
-        <Ionicons name="add" size={28} color="#fff" />
-      </TouchableOpacity>
+      {isAdmin && (
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => router.push('/loans/create')}
+        >
+          <Ionicons name="add" size={28} color="#fff" />
+        </TouchableOpacity>
+      )}
     </View>
   );
 }

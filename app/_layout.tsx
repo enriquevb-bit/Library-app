@@ -14,6 +14,7 @@ export default function RootLayout() {
           headerTitleStyle: { fontWeight: 'bold', color: colors.text },
         }}
       >
+        <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="books/[id]" options={{ title: 'Detalle del libro' }} />
         <Stack.Screen name="books/form" options={{ title: 'Libro' }} />

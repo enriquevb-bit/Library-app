@@ -9,35 +9,52 @@ import {
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { getBooks, getMembers, getLoans } from '@/services/api';
+import { getBooks, getMembers, getLoans, getMyLoans } from '@/services/api';
 import { colors } from '@/constants/theme';
+import { useRole } from '@/services/role';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const role = useRole();
+  const isAdmin = role === 'ADMIN';
   const [stats, setStats] = useState({ books: 0, members: 0, loans: 0, activeLoans: 0 });
   const [loading, setLoading] = useState(true);
 
   useFocusEffect(
     useCallback(() => {
-      loadStats();
-    }, [])
+      if (role) loadStats(role === 'ADMIN');
+    }, [role])
   );
 
-  const loadStats = async () => {
+  const loadStats = async (admin: boolean) => {
     setLoading(true);
     try {
-      const [booksData, membersData, loansData, activeLoansData] = await Promise.all([
-        getBooks({ pageSize: 1 }),
-        getMembers({ pageSize: 1 }),
-        getLoans({ pageSize: 1 }),
-        getLoans({ loanState: 'ACTIVE', pageSize: 1 }),
-      ]);
-      setStats({
-        books: booksData.totalElements,
-        members: membersData.totalElements,
-        loans: loansData.totalElements,
-        activeLoans: activeLoansData.totalElements,
-      });
+      if (admin) {
+        const [booksData, membersData, loansData, activeLoansData] = await Promise.all([
+          getBooks({ pageSize: 1 }),
+          getMembers({ pageSize: 1 }),
+          getLoans({ pageSize: 1 }),
+          getLoans({ loanState: 'ACTIVE', pageSize: 1 }),
+        ]);
+        setStats({
+          books: booksData.totalElements,
+          members: membersData.totalElements,
+          loans: loansData.totalElements,
+          activeLoans: activeLoansData.totalElements,
+        });
+      } else {
+        const [booksData, myLoansData, myActiveData] = await Promise.all([
+          getBooks({ pageSize: 1 }),
+          getMyLoans({ pageSize: 1 }),
+          getMyLoans({ loanState: 'ACTIVE', pageSize: 1 }),
+        ]);
+        setStats({
+          books: booksData.totalElements,
+          members: 0,
+          loans: myLoansData.totalElements,
+          activeLoans: myActiveData.totalElements,
+        });
+      }
     } catch {
       // silently fail, show 0s
     } finally {
@@ -45,11 +62,13 @@ export default function HomeScreen() {
     }
   };
 
-  const shortcuts = [
-    { label: 'Nuevo libro', icon: 'add-circle' as const, route: '/books/form', color: colors.primary },
-    { label: 'Nuevo miembro', icon: 'person-add' as const, route: '/members/form', color: colors.accent },
-    { label: 'Nuevo préstamo', icon: 'swap-horizontal' as const, route: '/loans/create', color: colors.warning },
-  ];
+  const shortcuts = isAdmin
+    ? [
+        { label: 'Nuevo libro', icon: 'add-circle' as const, route: '/books/form', color: colors.primary },
+        { label: 'Nuevo miembro', icon: 'person-add' as const, route: '/members/form', color: colors.accent },
+        { label: 'Nuevo préstamo', icon: 'swap-horizontal' as const, route: '/loans/create', color: colors.warning },
+      ]
+    : [];
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -69,29 +88,33 @@ export default function HomeScreen() {
             <Text style={styles.statLabel}>Libros</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.statCard} onPress={() => router.push('/(tabs)/members')}>
-            <Ionicons name="people" size={28} color={colors.accent} />
-            <Text style={styles.statNumber}>{stats.members}</Text>
-            <Text style={styles.statLabel}>Miembros</Text>
-          </TouchableOpacity>
+          {isAdmin && (
+            <TouchableOpacity style={styles.statCard} onPress={() => router.push('/(tabs)/members')}>
+              <Ionicons name="people" size={28} color={colors.accent} />
+              <Text style={styles.statNumber}>{stats.members}</Text>
+              <Text style={styles.statLabel}>Miembros</Text>
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity style={styles.statCard} onPress={() => router.push('/(tabs)/loans')}>
             <Ionicons name="swap-horizontal" size={28} color={colors.warning} />
             <Text style={styles.statNumber}>{stats.loans}</Text>
-            <Text style={styles.statLabel}>Préstamos</Text>
+            <Text style={styles.statLabel}>{isAdmin ? 'Préstamos' : 'Mis préstamos'}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.statCard} onPress={() => router.push('/(tabs)/loans')}>
             <Ionicons name="time" size={28} color={colors.error} />
             <Text style={styles.statNumber}>{stats.activeLoans}</Text>
-            <Text style={styles.statLabel}>Activos</Text>
+            <Text style={styles.statLabel}>{isAdmin ? 'Activos' : 'Mis activos'}</Text>
           </TouchableOpacity>
         </View>
       )}
 
-      <Text style={styles.sectionTitle}>Acciones rápidas</Text>
-      <View style={styles.shortcuts}>
-        {shortcuts.map((s) => (
+      {shortcuts.length > 0 && (
+        <>
+          <Text style={styles.sectionTitle}>Acciones rápidas</Text>
+          <View style={styles.shortcuts}>
+            {shortcuts.map((s) => (
           <TouchableOpacity
             key={s.label}
             style={styles.shortcutBtn}
@@ -103,8 +126,10 @@ export default function HomeScreen() {
             <Text style={styles.shortcutLabel}>{s.label}</Text>
             <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
           </TouchableOpacity>
-        ))}
-      </View>
+            ))}
+          </View>
+        </>
+      )}
     </ScrollView>
   );
 }

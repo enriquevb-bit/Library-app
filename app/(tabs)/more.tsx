@@ -1,29 +1,76 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/theme';
+import { useRole } from '@/services/role';
+import { clearToken, getStoredEmail } from '@/services/auth';
 
 export default function MoreScreen() {
   const router = useRouter();
+  const role = useRole();
+  const isAdmin = role === 'ADMIN';
+  const [email, setEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    getStoredEmail().then(setEmail);
+  }, []);
+
+  const handleLogout = () => {
+    Alert.alert('Cerrar sesión', '¿Seguro que quieres cerrar sesión?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Cerrar sesión',
+        style: 'destructive',
+        onPress: async () => {
+          await clearToken();
+          router.replace('/login');
+        },
+      },
+    ]);
+  };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        style={styles.menuItem}
-        onPress={() => router.push('/authors')}
-      >
-        <Ionicons name="person" size={24} color={colors.primary} />
-        <Text style={styles.menuText}>Autores</Text>
-        <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
-      </TouchableOpacity>
+      <View style={styles.userBox}>
+        <View style={styles.avatar}>
+          <Ionicons
+            name={isAdmin ? 'shield-checkmark' : 'person'}
+            size={28}
+            color={colors.primary}
+          />
+        </View>
+        <View style={styles.userInfo}>
+          <Text style={styles.userEmail}>{email ?? '—'}</Text>
+          <Text style={styles.userRole}>{isAdmin ? 'Administrador' : 'Miembro'}</Text>
+        </View>
+      </View>
 
-      <TouchableOpacity
-        style={styles.menuItem}
-        onPress={() => router.push('/genres')}
-      >
-        <Ionicons name="pricetag" size={24} color={colors.primary} />
-        <Text style={styles.menuText}>Géneros</Text>
-        <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+      {isAdmin && (
+        <>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => router.push('/authors')}
+          >
+            <Ionicons name="person" size={24} color={colors.primary} />
+            <Text style={styles.menuText}>Autores</Text>
+            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => router.push('/genres')}
+          >
+            <Ionicons name="pricetag" size={24} color={colors.primary} />
+            <Text style={styles.menuText}>Géneros</Text>
+            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+          </TouchableOpacity>
+        </>
+      )}
+
+      <TouchableOpacity style={[styles.menuItem, styles.logoutItem]} onPress={handleLogout}>
+        <Ionicons name="log-out-outline" size={24} color={colors.error} />
+        <Text style={[styles.menuText, { color: colors.error }]}>Cerrar sesión</Text>
       </TouchableOpacity>
     </View>
   );
@@ -31,6 +78,26 @@ export default function MoreScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
+  userBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    gap: 12,
+  },
+  avatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: colors.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  userInfo: { flex: 1 },
+  userEmail: { fontSize: 15, fontWeight: '600', color: colors.text },
+  userRole: { fontSize: 13, color: colors.textSecondary, marginTop: 2 },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -46,4 +113,5 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginLeft: 12,
   },
+  logoutItem: { marginTop: 24 },
 });

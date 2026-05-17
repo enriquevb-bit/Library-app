@@ -13,9 +13,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { getBooks } from '@/services/api';
 import { BookDTO } from '@/types';
 import { colors } from '@/constants/theme';
+import { useRole } from '@/services/role';
 
 export default function BooksScreen() {
   const router = useRouter();
+  const role = useRole();
+  const isAdmin = role === 'ADMIN';
   const [books, setBooks] = useState<BookDTO[]>([]);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
@@ -146,12 +149,14 @@ export default function BooksScreen() {
         </View>
       )}
 
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => router.push('/books/form')}
-      >
-        <Ionicons name="add" size={28} color="#fff" />
-      </TouchableOpacity>
+      {isAdmin && (
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => router.push('/books/form')}
+        >
+          <Ionicons name="add" size={28} color="#fff" />
+        </TouchableOpacity>
+      )}
     </View>
   );
 }

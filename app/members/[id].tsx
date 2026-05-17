@@ -13,10 +13,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { getMember, deleteMember } from '@/services/api';
 import { MemberDTO } from '@/types';
 import { colors, MEMBER_STATE_COLORS, MEMBER_STATE_LABELS } from '@/constants/theme';
+import { useRole } from '@/services/role';
 
 export default function MemberDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const role = useRole();
+  const isAdmin = role === 'ADMIN';
   const [member, setMember] = useState<MemberDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -97,31 +100,33 @@ export default function MemberDetailScreen() {
         <DetailRow label="Fecha de registro" value={member.registerDate?.split('T')[0] || 'N/A'} />
       </View>
 
-      <View style={styles.actions}>
-        <TouchableOpacity
-          style={[styles.actionBtn, styles.loanBtn]}
-          onPress={() => router.push({ pathname: '/loans/create', params: { memberId: member.id } })}
-        >
-          <Ionicons name="add-circle-outline" size={20} color="#fff" />
-          <Text style={styles.actionText}>Nuevo préstamo</Text>
-        </TouchableOpacity>
+      {isAdmin && (
+        <View style={styles.actions}>
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.loanBtn]}
+            onPress={() => router.push({ pathname: '/loans/create', params: { memberId: member.id } })}
+          >
+            <Ionicons name="add-circle-outline" size={20} color="#fff" />
+            <Text style={styles.actionText}>Nuevo préstamo</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.actionBtn, styles.editBtn]}
-          onPress={() => router.push({ pathname: '/members/form', params: { id: member.id } })}
-        >
-          <Ionicons name="create-outline" size={20} color="#fff" />
-          <Text style={styles.actionText}>Editar</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.editBtn]}
+            onPress={() => router.push({ pathname: '/members/form', params: { id: member.id } })}
+          >
+            <Ionicons name="create-outline" size={20} color="#fff" />
+            <Text style={styles.actionText}>Editar</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.actionBtn, styles.deleteBtn]}
-          onPress={handleDelete}
-        >
-          <Ionicons name="trash-outline" size={20} color="#fff" />
-          <Text style={styles.actionText}>Eliminar</Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.deleteBtn]}
+            onPress={handleDelete}
+          >
+            <Ionicons name="trash-outline" size={20} color="#fff" />
+            <Text style={styles.actionText}>Eliminar</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </ScrollView>
   );
 }

@@ -13,6 +13,9 @@ import {
 // Generic fetch wrapper with JWT auth
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const token = await getToken();
+  if (!token) {
+    throw new Error('No autenticado');
+  }
   const url = `${API_BASE_URL}${endpoint}`;
   const response = await fetch(url, {
     headers: {
@@ -53,6 +56,9 @@ function getIdFromLocation(locationHeader: string | null): string | null {
 // POST that returns the ID from Location header
 async function createRequest(endpoint: string, body: unknown): Promise<string | null> {
   const token = await getToken();
+  if (!token) {
+    throw new Error('No autenticado');
+  }
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     method: 'POST',
     headers: {
@@ -262,4 +268,19 @@ export async function returnLoan(id: string): Promise<void> {
 
 export async function deleteLoan(id: string): Promise<void> {
   return request(`/loan/${id}`, { method: 'DELETE' });
+}
+
+// ==================== ME (current member) ====================
+
+export async function getMyMember(): Promise<MemberDTO> {
+  return request('/me');
+}
+
+export async function getMyLoans(params?: {
+  loanState?: string;
+  pageNumber?: number;
+  pageSize?: number;
+}): Promise<PageResponse<LoanDTO>> {
+  const query = buildQuery(params ?? {});
+  return request(`/me/loan${query}`);
 }

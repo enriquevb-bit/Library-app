@@ -1,6 +1,7 @@
 // Enums
 export type MemberState = 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'BLOCKED' | 'INACTIVE';
 export type LoanState = 'ACTIVE' | 'RETURNED' | 'OVERDUE' | 'CANCELLED';
+export type UserRole = 'ADMIN' | 'MEMBER';
 
 // DTOs matching Spring backend
 export interface BookDTO {
