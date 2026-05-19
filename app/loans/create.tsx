@@ -6,7 +6,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -14,10 +13,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { getBooks, getMembers, createLoan } from '@/services/api';
 import { BookDTO, MemberDTO, RequestedLoanItem } from '@/types';
 import { colors } from '@/constants/theme';
+import { useConfirm } from '@/services/confirm';
 
 export default function CreateLoanScreen() {
   const { memberId } = useLocalSearchParams<{ memberId?: string }>();
   const router = useRouter();
+  const { alert } = useConfirm();
 
   const [members, setMembers] = useState<MemberDTO[]>([]);
   const [selectedMember, setSelectedMember] = useState<string>(memberId || '');
@@ -42,7 +43,7 @@ export default function CreateLoanScreen() {
         setMembers(membersData.content);
       }
     } catch (e: any) {
-      Alert.alert('Error', 'No se pudieron cargar los datos');
+      alert({ title: 'Error', message: 'No se pudieron cargar los datos' });
     } finally {
       setLoadingData(false);
     }
@@ -79,7 +80,7 @@ export default function CreateLoanScreen() {
 
   const handleSubmit = async () => {
     if (!selectedMember) {
-      Alert.alert('Error', 'Selecciona un miembro');
+      alert({ title: 'Error', message: 'Selecciona un miembro' });
       return;
     }
 
@@ -88,18 +89,20 @@ export default function CreateLoanScreen() {
       .map(([bookId, quantity]) => ({ bookId, quantity }));
 
     if (items.length === 0) {
-      Alert.alert('Error', 'Selecciona al menos un libro');
+      alert({ title: 'Error', message: 'Selecciona al menos un libro' });
       return;
     }
 
     setLoading(true);
     try {
       await createLoan(selectedMember, items);
-      Alert.alert('Préstamo creado', 'El préstamo se ha creado correctamente', [
-        { text: 'OK', onPress: () => router.back() },
-      ]);
+      alert({
+        title: 'Préstamo creado',
+        message: 'El préstamo se ha creado correctamente',
+        onDismiss: () => router.back(),
+      });
     } catch (e: any) {
-      Alert.alert('Error', e.message || 'No se pudo crear el préstamo');
+      alert({ title: 'Error', message: e.message || 'No se pudo crear el préstamo' });
     } finally {
       setLoading(false);
     }

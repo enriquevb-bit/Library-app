@@ -6,18 +6,19 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getGenre, createGenre, updateGenre } from '@/services/api';
 import { GenreDTO } from '@/types';
 import { colors } from '@/constants/theme';
+import { useConfirm } from '@/services/confirm';
 
 export default function GenreFormScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const router = useRouter();
   const isEditing = !!id;
+  const { alert } = useConfirm();
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -36,7 +37,7 @@ export default function GenreFormScreen() {
       setDescription(genre.description || '');
       setVersion(genre.version);
     } catch {
-      Alert.alert('Error', 'No se pudo cargar el género');
+      alert({ title: 'Error', message: 'No se pudo cargar el género' });
       router.back();
     } finally {
       setLoadingData(false);
@@ -45,7 +46,7 @@ export default function GenreFormScreen() {
 
   const handleSubmit = async () => {
     if (!name.trim()) {
-      Alert.alert('Error', 'El nombre es obligatorio');
+      alert({ title: 'Error', message: 'El nombre es obligatorio' });
       return;
     }
 
@@ -61,7 +62,7 @@ export default function GenreFormScreen() {
       else await createGenre(genre);
       router.back();
     } catch (e: any) {
-      Alert.alert('Error', e.message || 'No se pudo guardar');
+      alert({ title: 'Error', message: e.message || 'No se pudo guardar' });
     } finally {
       setLoading(false);
     }

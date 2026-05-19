@@ -6,18 +6,19 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getAuthor, createAuthor, updateAuthor } from '@/services/api';
 import { AuthorDTO } from '@/types';
 import { colors } from '@/constants/theme';
+import { useConfirm } from '@/services/confirm';
 
 export default function AuthorFormScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const router = useRouter();
   const isEditing = !!id;
+  const { alert } = useConfirm();
 
   const [fullName, setFullName] = useState('');
   const [nationality, setNationality] = useState('');
@@ -38,7 +39,7 @@ export default function AuthorFormScreen() {
       setBirthDate(author.birthDate || '');
       setVersion(author.version);
     } catch {
-      Alert.alert('Error', 'No se pudo cargar el autor');
+      alert({ title: 'Error', message: 'No se pudo cargar el autor' });
       router.back();
     } finally {
       setLoadingData(false);
@@ -47,7 +48,7 @@ export default function AuthorFormScreen() {
 
   const handleSubmit = async () => {
     if (!fullName.trim()) {
-      Alert.alert('Error', 'El nombre es obligatorio');
+      alert({ title: 'Error', message: 'El nombre es obligatorio' });
       return;
     }
 
@@ -64,7 +65,7 @@ export default function AuthorFormScreen() {
       else await createAuthor(author);
       router.back();
     } catch (e: any) {
-      Alert.alert('Error', e.message || 'No se pudo guardar');
+      alert({ title: 'Error', message: e.message || 'No se pudo guardar' });
     } finally {
       setLoading(false);
     }

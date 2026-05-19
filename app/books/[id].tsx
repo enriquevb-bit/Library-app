@@ -5,7 +5,6 @@ import {
   ScrollView,
   StyleSheet,
   ActivityIndicator,
-  Alert,
   TouchableOpacity,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -14,12 +13,14 @@ import { getBook, deleteBook } from '@/services/api';
 import { BookDTO } from '@/types';
 import { colors } from '@/constants/theme';
 import { useRole } from '@/services/role';
+import { useConfirm } from '@/services/confirm';
 
 export default function BookDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const role = useRole();
   const isAdmin = role === 'ADMIN';
+  const { confirm, alert } = useConfirm();
   const [book, setBook] = useState<BookDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,25 +43,20 @@ export default function BookDetailScreen() {
   };
 
   const handleDelete = () => {
-    Alert.alert(
-      'Eliminar libro',
-      `¿Seguro que quieres eliminar "${book?.title}"?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteBook(id!);
-              router.back();
-            } catch (e: any) {
-              Alert.alert('Error', e.message || 'No se pudo eliminar');
-            }
-          },
-        },
-      ]
-    );
+    confirm({
+      title: 'Eliminar libro',
+      message: `¿Seguro que quieres eliminar "${book?.title}"?`,
+      confirmLabel: 'Eliminar',
+      destructive: true,
+      onConfirm: async () => {
+        try {
+          await deleteBook(id!);
+          router.back();
+        } catch (e: any) {
+          alert({ title: 'Error', message: e.message || 'No se pudo eliminar' });
+        }
+      },
+    });
   };
 
   if (loading) {

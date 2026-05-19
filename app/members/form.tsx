@@ -6,13 +6,13 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getMember, createMember, updateMember } from '@/services/api';
 import { MemberDTO, MemberState } from '@/types';
 import { colors, MEMBER_STATE_LABELS } from '@/constants/theme';
+import { useConfirm } from '@/services/confirm';
 
 const STATES: MemberState[] = ['PENDING', 'ACTIVE', 'SUSPENDED', 'BLOCKED', 'INACTIVE'];
 
@@ -20,6 +20,7 @@ export default function MemberFormScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const router = useRouter();
   const isEditing = !!id;
+  const { alert } = useConfirm();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -42,7 +43,7 @@ export default function MemberFormScreen() {
       setMemberState(member.memberState);
       setVersion(member.version);
     } catch (e: any) {
-      Alert.alert('Error', 'No se pudo cargar el miembro');
+      alert({ title: 'Error', message: 'No se pudo cargar el miembro' });
       router.back();
     } finally {
       setLoadingData(false);
@@ -51,7 +52,7 @@ export default function MemberFormScreen() {
 
   const handleSubmit = async () => {
     if (!name.trim() || !email.trim()) {
-      Alert.alert('Error', 'Rellena nombre y email');
+      alert({ title: 'Error', message: 'Rellena nombre y email' });
       return;
     }
 
@@ -71,7 +72,7 @@ export default function MemberFormScreen() {
       }
       router.back();
     } catch (e: any) {
-      Alert.alert('Error', e.message || 'No se pudo guardar');
+      alert({ title: 'Error', message: e.message || 'No se pudo guardar' });
     } finally {
       setLoading(false);
     }

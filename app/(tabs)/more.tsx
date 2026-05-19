@@ -1,33 +1,34 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/constants/theme';
 import { useRole } from '@/services/role';
 import { clearToken, getStoredEmail } from '@/services/auth';
+import { useConfirm } from '@/services/confirm';
 
 export default function MoreScreen() {
   const router = useRouter();
   const role = useRole();
   const isAdmin = role === 'ADMIN';
   const [email, setEmail] = useState<string | null>(null);
+  const { confirm } = useConfirm();
 
   useEffect(() => {
     getStoredEmail().then(setEmail);
   }, []);
 
   const handleLogout = () => {
-    Alert.alert('Cerrar sesión', '¿Seguro que quieres cerrar sesión?', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Cerrar sesión',
-        style: 'destructive',
-        onPress: async () => {
-          await clearToken();
-          router.replace('/login');
-        },
+    confirm({
+      title: 'Cerrar sesión',
+      message: '¿Seguro que quieres cerrar sesión?',
+      confirmLabel: 'Cerrar sesión',
+      destructive: true,
+      onConfirm: async () => {
+        await clearToken();
+        router.replace('/login');
       },
-    ]);
+    });
   };
 
   return (

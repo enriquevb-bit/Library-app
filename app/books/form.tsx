@@ -6,18 +6,19 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getBook, createBook, updateBook } from '@/services/api';
 import { BookDTO } from '@/types';
 import { colors } from '@/constants/theme';
+import { useConfirm } from '@/services/confirm';
 
 export default function BookFormScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const router = useRouter();
   const isEditing = !!id;
+  const { alert } = useConfirm();
 
   const [isbn, setIsbn] = useState('');
   const [title, setTitle] = useState('');
@@ -44,7 +45,7 @@ export default function BookFormScreen() {
       setPublishedDate(book.publishedDate || '');
       setVersion(book.version);
     } catch (e: any) {
-      Alert.alert('Error', 'No se pudo cargar el libro');
+      alert({ title: 'Error', message: 'No se pudo cargar el libro' });
       router.back();
     } finally {
       setLoadingData(false);
@@ -61,7 +62,7 @@ export default function BookFormScreen() {
       Number.isNaN(copiesNum) || copiesNum < 0 ||
       Number.isNaN(priceNum) || priceNum < 0
     ) {
-      Alert.alert('Error', 'Rellena los campos obligatorios. Copias y precio deben ser números no negativos.');
+      alert({ title: 'Error', message: 'Rellena los campos obligatorios. Copias y precio deben ser números no negativos.' });
       return;
     }
 
@@ -83,7 +84,7 @@ export default function BookFormScreen() {
       }
       router.back();
     } catch (e: any) {
-      Alert.alert('Error', e.message || 'No se pudo guardar el libro');
+      alert({ title: 'Error', message: e.message || 'No se pudo guardar el libro' });
     } finally {
       setLoading(false);
     }

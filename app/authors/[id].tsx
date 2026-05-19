@@ -5,7 +5,6 @@ import {
   ScrollView,
   StyleSheet,
   ActivityIndicator,
-  Alert,
   TouchableOpacity,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -14,12 +13,14 @@ import { getAuthor, deleteAuthor } from '@/services/api';
 import { AuthorDTO } from '@/types';
 import { colors } from '@/constants/theme';
 import { useRole } from '@/services/role';
+import { useConfirm } from '@/services/confirm';
 
 export default function AuthorDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const role = useRole();
   const isAdmin = role === 'ADMIN';
+  const { confirm, alert } = useConfirm();
   const [author, setAuthor] = useState<AuthorDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,16 +40,16 @@ export default function AuthorDetailScreen() {
   };
 
   const handleDelete = () => {
-    Alert.alert('Eliminar autor', `¿Seguro que quieres eliminar a "${author?.fullName}"?`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar', style: 'destructive',
-        onPress: async () => {
-          try { await deleteAuthor(id!); router.back(); }
-          catch (e: any) { Alert.alert('Error', e.message || 'No se pudo eliminar'); }
-        },
+    confirm({
+      title: 'Eliminar autor',
+      message: `¿Seguro que quieres eliminar a "${author?.fullName}"?`,
+      confirmLabel: 'Eliminar',
+      destructive: true,
+      onConfirm: async () => {
+        try { await deleteAuthor(id!); router.back(); }
+        catch (e: any) { alert({ title: 'Error', message: e.message || 'No se pudo eliminar' }); }
       },
-    ]);
+    });
   };
 
   if (loading) return <View style={styles.center}><ActivityIndicator size="large" color={colors.primary} /></View>;

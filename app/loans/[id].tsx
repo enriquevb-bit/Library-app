@@ -5,7 +5,6 @@ import {
   ScrollView,
   StyleSheet,
   ActivityIndicator,
-  Alert,
   TouchableOpacity,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -14,12 +13,14 @@ import { getLoan, returnLoan, deleteLoan } from '@/services/api';
 import { LoanDTO } from '@/types';
 import { colors, LOAN_STATE_COLORS, LOAN_STATE_LABELS } from '@/constants/theme';
 import { useRole } from '@/services/role';
+import { useConfirm } from '@/services/confirm';
 
 export default function LoanDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const role = useRole();
   const isAdmin = role === 'ADMIN';
+  const { confirm, alert } = useConfirm();
   const [loan, setLoan] = useState<LoanDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,46 +43,36 @@ export default function LoanDetailScreen() {
   };
 
   const handleReturn = () => {
-    Alert.alert(
-      'Devolver préstamo',
-      '¿Confirmar la devolución de este préstamo?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Devolver',
-          onPress: async () => {
-            try {
-              await returnLoan(id!);
-              loadLoan();
-            } catch (e: any) {
-              Alert.alert('Error', e.message || 'No se pudo devolver');
-            }
-          },
-        },
-      ]
-    );
+    confirm({
+      title: 'Devolver préstamo',
+      message: '¿Confirmar la devolución de este préstamo?',
+      confirmLabel: 'Devolver',
+      onConfirm: async () => {
+        try {
+          await returnLoan(id!);
+          loadLoan();
+        } catch (e: any) {
+          alert({ title: 'Error', message: e.message || 'No se pudo devolver' });
+        }
+      },
+    });
   };
 
   const handleDelete = () => {
-    Alert.alert(
-      'Eliminar préstamo',
-      '¿Seguro que quieres eliminar este préstamo?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteLoan(id!);
-              router.back();
-            } catch (e: any) {
-              Alert.alert('Error', e.message || 'No se pudo eliminar');
-            }
-          },
-        },
-      ]
-    );
+    confirm({
+      title: 'Eliminar préstamo',
+      message: '¿Seguro que quieres eliminar este préstamo?',
+      confirmLabel: 'Eliminar',
+      destructive: true,
+      onConfirm: async () => {
+        try {
+          await deleteLoan(id!);
+          router.back();
+        } catch (e: any) {
+          alert({ title: 'Error', message: e.message || 'No se pudo eliminar' });
+        }
+      },
+    });
   };
 
   const formatDate = (dateStr?: string) => {
