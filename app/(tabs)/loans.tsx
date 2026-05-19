@@ -161,13 +161,23 @@ export default function LoansScreen() {
         </View>
       )}
 
-      {isAdmin && (
+      {isAdmin ? (
         <TouchableOpacity
           style={styles.fab}
           onPress={() => router.push('/loans/create')}
         >
           <Ionicons name="add" size={28} color="#fff" />
         </TouchableOpacity>
+      ) : (
+        <View style={styles.bottomBar}>
+          <TouchableOpacity
+            style={styles.primaryAction}
+            onPress={() => router.push('/loans/create')}
+          >
+            <Ionicons name="bookmark" size={18} color="#fff" />
+            <Text style={styles.primaryActionText}>Reservar</Text>
+          </TouchableOpacity>
+        </View>
       )}
     </View>
   );
@@ -247,6 +257,30 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: colors.text,
+  },
+  bottomBar: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    padding: 12,
+    backgroundColor: colors.background,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  primaryAction: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    paddingVertical: 14,
+  },
+  primaryActionText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   fab: {
     position: 'absolute',

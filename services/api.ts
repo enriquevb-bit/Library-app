@@ -10,6 +10,25 @@ import {
   PageResponse,
 } from '@/types';
 
+async function extractErrorMessage(response: Response): Promise<string> {
+  const fallback = `Error ${response.status}`;
+  let text = '';
+  try {
+    text = await response.text();
+  } catch {
+    return fallback;
+  }
+  if (!text) return fallback;
+  try {
+    const json = JSON.parse(text);
+    const msg = json.detail || json.message || json.error || json.title;
+    if (typeof msg === 'string' && msg.trim()) return msg;
+  } catch {
+    // not JSON
+  }
+  return text.length <= 200 ? text : fallback;
+}
+
 // Generic fetch wrapper with JWT auth
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const token = await getToken();
@@ -28,8 +47,7 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || `Error ${response.status}`);
+    throw new Error(await extractErrorMessage(response));
   }
 
   // 204 No Content
@@ -68,8 +86,7 @@ async function createRequest(endpoint: string, body: unknown): Promise<string | 
     body: JSON.stringify(body),
   });
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || `Error ${response.status}`);
+    throw new Error(await extractErrorMessage(response));
   }
   return getIdFromLocation(response.headers.get('Location'));
 }
@@ -283,4 +300,8 @@ export async function getMyLoans(params?: {
 }): Promise<PageResponse<LoanDTO>> {
   const query = buildQuery(params ?? {});
   return request(`/me/loan${query}`);
+}
+
+export async function createMyLoan(items: RequestedLoanItem[]): Promise<string | null> {
+  return createRequest('/me/loan', items);
 }

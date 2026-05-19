@@ -75,7 +75,7 @@ export default function HomeScreen() {
       <View style={styles.hero}>
         <Ionicons name="library" size={48} color={colors.primary} />
         <Text style={styles.heroTitle}>Biblioteca</Text>
-        <Text style={styles.heroSubtitle}>Panel de gestión</Text>
+        <Text style={styles.heroSubtitle}>{isAdmin ? 'Panel de gestión' : 'Mi biblioteca'}</Text>
       </View>
 
       {loading ? (

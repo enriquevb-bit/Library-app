@@ -8,17 +8,20 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { getBooks, getMembers, createLoan } from '@/services/api';
+import { getBooks, getMembers, createLoan, createMyLoan } from '@/services/api';
 import { BookDTO, MemberDTO, RequestedLoanItem } from '@/types';
 import { colors } from '@/constants/theme';
 import { useConfirm } from '@/services/confirm';
+import { useRole } from '@/services/role';
 
 export default function CreateLoanScreen() {
   const { memberId } = useLocalSearchParams<{ memberId?: string }>();
   const router = useRouter();
   const { alert } = useConfirm();
+  const role = useRole();
+  const isMember = role === 'MEMBER';
 
   const [members, setMembers] = useState<MemberDTO[]>([]);
   const [selectedMember, setSelectedMember] = useState<string>(memberId || '');
@@ -29,14 +32,14 @@ export default function CreateLoanScreen() {
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (role) loadData(role === 'MEMBER');
+  }, [role]);
 
-  const loadData = async () => {
+  const loadData = async (memberMode: boolean) => {
     try {
       const [booksData, membersData] = await Promise.all([
         getBooks({ pageSize: 50 }),
-        memberId ? Promise.resolve(null) : getMembers({ pageSize: 50 }),
+        memberMode || memberId ? Promise.resolve(null) : getMembers({ pageSize: 50 }),
       ]);
       setBooks(booksData.content);
       if (membersData) {
@@ -79,7 +82,7 @@ export default function CreateLoanScreen() {
   };
 
   const handleSubmit = async () => {
-    if (!selectedMember) {
+    if (!isMember && !selectedMember) {
       alert({ title: 'Error', message: 'Selecciona un miembro' });
       return;
     }
@@ -95,14 +98,26 @@ export default function CreateLoanScreen() {
 
     setLoading(true);
     try {
-      await createLoan(selectedMember, items);
-      alert({
-        title: 'Préstamo creado',
-        message: 'El préstamo se ha creado correctamente',
-        onDismiss: () => router.back(),
-      });
+      if (isMember) {
+        await createMyLoan(items);
+        alert({
+          title: 'Reserva enviada',
+          message: 'Tu reserva se ha registrado correctamente.',
+          onDismiss: () => router.back(),
+        });
+      } else {
+        await createLoan(selectedMember, items);
+        alert({
+          title: 'Préstamo creado',
+          message: 'El préstamo se ha creado correctamente',
+          onDismiss: () => router.back(),
+        });
+      }
     } catch (e: any) {
-      alert({ title: 'Error', message: e.message || 'No se pudo crear el préstamo' });
+      alert({
+        title: 'Error',
+        message: e.message || (isMember ? 'No se pudo enviar la reserva' : 'No se pudo crear el préstamo'),
+      });
     } finally {
       setLoading(false);
     }
@@ -151,7 +166,16 @@ export default function CreateLoanScreen() {
 
   return (
     <View style={styles.container}>
-      {!memberId && (
+      <Stack.Screen options={{ title: isMember ? 'Reservar préstamo' : 'Nuevo préstamo' }} />
+      {isMember && (
+        <View style={styles.infoBanner}>
+          <Ionicons name="information-circle" size={18} color={colors.primary} />
+          <Text style={styles.infoBannerText}>
+            Selecciona los libros que quieres reservar. Quedarán a tu nombre al confirmar.
+          </Text>
+        </View>
+      )}
+      {!isMember && !memberId && (
         <View style={styles.memberSection}>
           <Text style={styles.sectionLabel}>Miembro</Text>
           <View style={styles.memberList}>
@@ -212,7 +236,7 @@ export default function CreateLoanScreen() {
           <ActivityIndicator color="#fff" />
         ) : (
           <Text style={styles.submitText}>
-            Crear préstamo ({cartCount} {cartCount === 1 ? 'libro' : 'libros'})
+            {isMember ? 'Reservar' : 'Crear préstamo'} ({cartCount} {cartCount === 1 ? 'libro' : 'libros'})
           </Text>
         )}
       </TouchableOpacity>
@@ -223,6 +247,19 @@ export default function CreateLoanScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
+  infoBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    margin: 12,
+    marginBottom: 0,
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  infoBannerText: { flex: 1, fontSize: 13, color: colors.textSecondary, lineHeight: 18 },
   memberSection: { paddingHorizontal: 12, paddingTop: 12 },
   sectionLabel: { fontSize: 14, fontWeight: '700', color: colors.textSecondary, marginBottom: 6 },
   memberList: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
