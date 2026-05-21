@@ -33,6 +33,7 @@ export const MEMBER_STATE_LABELS: Record<MemberState, string> = {
 };
 
 export const LOAN_STATE_COLORS: Record<LoanState, string> = {
+  RESERVED: '#FFA726',
   ACTIVE: '#4CAF50',
   RETURNED: '#81C784',
   OVERDUE: '#EF5350',
@@ -40,6 +41,7 @@ export const LOAN_STATE_COLORS: Record<LoanState, string> = {
 };
 
 export const LOAN_STATE_LABELS: Record<LoanState, string> = {
+  RESERVED: 'Reservado',
   ACTIVE: 'Activo',
   RETURNED: 'Devuelto',
   OVERDUE: 'Vencido',

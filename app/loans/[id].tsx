@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { getLoan, returnLoan, deleteLoan } from '@/services/api';
+import { getLoan, getMyLoan, returnLoan, deleteLoan, activateLoan } from '@/services/api';
 import { LoanDTO } from '@/types';
 import { colors, LOAN_STATE_COLORS, LOAN_STATE_LABELS } from '@/constants/theme';
 import { useRole } from '@/services/role';
@@ -26,14 +26,14 @@ export default function LoanDetailScreen() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadLoan();
-  }, [id]);
+    if (role) loadLoan();
+  }, [id, role]);
 
   const loadLoan = async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getLoan(id!);
+      const data = isAdmin ? await getLoan(id!) : await getMyLoan(id!);
       setLoan(data);
     } catch (e: any) {
       setError(e.message || 'Error al cargar el préstamo');
@@ -53,6 +53,22 @@ export default function LoanDetailScreen() {
           loadLoan();
         } catch (e: any) {
           alert({ title: 'Error', message: e.message || 'No se pudo devolver' });
+        }
+      },
+    });
+  };
+
+  const handleActivate = () => {
+    confirm({
+      title: 'Aceptar reserva',
+      message: '¿Activar este préstamo? Pasará de RESERVADO a ACTIVO.',
+      confirmLabel: 'Aceptar',
+      onConfirm: async () => {
+        try {
+          await activateLoan(id!);
+          loadLoan();
+        } catch (e: any) {
+          alert({ title: 'Error', message: e.message || 'No se pudo activar la reserva' });
         }
       },
     });
@@ -140,6 +156,16 @@ export default function LoanDetailScreen() {
 
       {isAdmin && (
         <View style={styles.actions}>
+          {loan.loanState === 'RESERVED' && (
+            <TouchableOpacity
+              style={[styles.actionBtn, styles.activateBtn]}
+              onPress={handleActivate}
+            >
+              <Ionicons name="checkmark-done-outline" size={20} color="#fff" />
+              <Text style={styles.actionText}>Aceptar reserva</Text>
+            </TouchableOpacity>
+          )}
+
           {(loan.loanState === 'ACTIVE' || loan.loanState === 'OVERDUE') && (
             <TouchableOpacity
               style={[styles.actionBtn, styles.returnBtn]}
@@ -254,6 +280,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   returnBtn: { backgroundColor: colors.primary },
+  activateBtn: { backgroundColor: colors.warning },
   deleteBtn: { backgroundColor: colors.error },
   actionText: { color: '#fff', fontSize: 15, fontWeight: '600' },
   errorText: { color: colors.error, fontSize: 15 },

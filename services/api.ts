@@ -283,6 +283,10 @@ export async function returnLoan(id: string): Promise<void> {
   return request(`/loan/${id}/return`, { method: 'PATCH' });
 }
 
+export async function activateLoan(id: string): Promise<void> {
+  return request(`/loan/${id}/activate`, { method: 'PATCH' });
+}
+
 export async function deleteLoan(id: string): Promise<void> {
   return request(`/loan/${id}`, { method: 'DELETE' });
 }
@@ -300,6 +304,10 @@ export async function getMyLoans(params?: {
 }): Promise<PageResponse<LoanDTO>> {
   const query = buildQuery(params ?? {});
   return request(`/me/loan${query}`);
+}
+
+export async function getMyLoan(id: string): Promise<LoanDTO> {
+  return request(`/me/loan/${id}`);
 }
 
 export async function createMyLoan(items: RequestedLoanItem[]): Promise<string | null> {

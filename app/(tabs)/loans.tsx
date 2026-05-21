@@ -15,7 +15,7 @@ import { LoanDTO, LoanState } from '@/types';
 import { colors, LOAN_STATE_COLORS, LOAN_STATE_LABELS } from '@/constants/theme';
 import { useRole } from '@/services/role';
 
-const FILTERS: (LoanState | 'ALL')[] = ['ALL', 'ACTIVE', 'RETURNED', 'OVERDUE', 'CANCELLED'];
+const FILTERS: (LoanState | 'ALL')[] = ['ALL', 'RESERVED', 'ACTIVE', 'RETURNED', 'OVERDUE', 'CANCELLED'];
 
 export default function LoansScreen() {
   const router = useRouter();
