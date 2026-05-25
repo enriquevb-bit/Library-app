@@ -1,8 +1,14 @@
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
-// Android emulator uses 10.0.2.2 to reach host localhost
-// iOS simulator and web use localhost directly
+const extra = (Constants.expoConfig?.extra ?? {}) as { apiUrl?: string; authUrl?: string };
+
+// En prod la URL viene de app.json (extra.apiUrl); en local, fallback por plataforma.
 const getBaseUrl = () => {
+  if (extra.apiUrl) {
+    return extra.apiUrl;
+  }
+  // El emulador de Android llega al host por 10.0.2.2
   if (Platform.OS === 'android') {
     return 'http://10.0.2.2:8080/api/v1';
   }

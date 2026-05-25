@@ -31,7 +31,7 @@ export default function LoginScreen() {
     setError(null);
     try {
       await login(email.trim(), password);
-      router.replace('/(tabs)/home');
+      router.replace('/');
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'No se pudo iniciar sesión';
       setError(msg);
@@ -94,23 +94,16 @@ export default function LoginScreen() {
             <Text style={styles.submitText}>Entrar</Text>
           )}
         </TouchableOpacity>
-
-        <View style={styles.hint}>
-          <Text style={styles.hintTitle}>Usuarios de demo:</Text>
-          <Text style={styles.hintText}>admin@gmail.com / abc123. (admin)</Text>
-          <Text style={styles.hintText}>miembro@gmail.com / abc123. (member)</Text>
-        </View>
       </View>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: colors.background, justifyContent: 'center' },
   hero: {
     alignItems: 'center',
-    paddingTop: 80,
-    paddingBottom: 32,
+    paddingBottom: 24,
   },
   title: {
     fontSize: 32,
@@ -161,23 +154,4 @@ const styles = StyleSheet.create({
   },
   submitBtnDisabled: { opacity: 0.6 },
   submitText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  hint: {
-    marginTop: 32,
-    padding: 14,
-    backgroundColor: colors.surface,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  hintTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.textSecondary,
-    marginBottom: 6,
-  },
-  hintText: {
-    fontSize: 13,
-    color: colors.textMuted,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-  },
 });

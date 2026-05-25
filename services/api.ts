@@ -1,3 +1,8 @@
+// Las funciones de este archivo se dividen en dos bloques: las que consume
+// la app ADMIN (rutas /book, /member, /loan, /author, /genre) y las que
+// consume la app MEMBER (rutas /me/...). Refleja la separación entre los
+// controllers Spring del backend (LoanController vs MeController).
+
 import { API_BASE_URL } from '@/config/api';
 import { getToken } from '@/services/auth';
 import {
@@ -209,6 +214,7 @@ export async function deleteGenre(id: string): Promise<void> {
 export async function getMembers(params?: {
   name?: string;
   email?: string;
+  memberState?: string;
   pageNumber?: number;
   pageSize?: number;
 }): Promise<PageResponse<MemberDTO>> {

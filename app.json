@@ -29,6 +29,10 @@
     "scheme": "library-app",
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "apiUrl": "https://library-backend-go78.onrender.com/api/v1",
+      "authUrl": "https://library-auth-server.onrender.com"
+    }
   }
 }

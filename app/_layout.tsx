@@ -16,20 +16,10 @@ export default function RootLayout() {
             headerTitleStyle: { fontWeight: 'bold', color: colors.text },
           }}
         >
+          <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="login" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="books/[id]" options={{ title: 'Detalle del libro' }} />
-          <Stack.Screen name="books/form" options={{ title: 'Libro' }} />
-          <Stack.Screen name="members/[id]" options={{ title: 'Detalle del miembro' }} />
-          <Stack.Screen name="members/form" options={{ title: 'Miembro' }} />
-          <Stack.Screen name="loans/[id]" options={{ title: 'Detalle del préstamo' }} />
-          <Stack.Screen name="loans/create" options={{ title: 'Nuevo préstamo' }} />
-          <Stack.Screen name="authors/index" options={{ title: 'Autores' }} />
-          <Stack.Screen name="authors/[id]" options={{ title: 'Detalle del autor' }} />
-          <Stack.Screen name="authors/form" options={{ title: 'Autor' }} />
-          <Stack.Screen name="genres/index" options={{ title: 'Géneros' }} />
-          <Stack.Screen name="genres/[id]" options={{ title: 'Detalle del género' }} />
-          <Stack.Screen name="genres/form" options={{ title: 'Género' }} />
+          <Stack.Screen name="(admin)" options={{ headerShown: false }} />
+          <Stack.Screen name="(member)" options={{ headerShown: false }} />
         </Stack>
       </ConfirmProvider>
     </SafeAreaProvider>

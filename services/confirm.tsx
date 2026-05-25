@@ -45,17 +45,19 @@ function BaseDialog({
 }
 
 function ConfirmDialog({
+  visible,
   opts,
   onConfirm,
   onCancel,
 }: {
+  visible: boolean;
   opts: ConfirmOptions | null;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
   return (
     <BaseDialog
-      visible={opts !== null}
+      visible={visible}
       title={opts?.title ?? ''}
       message={opts?.message ?? ''}
       onRequestClose={onCancel}
@@ -73,15 +75,17 @@ function ConfirmDialog({
 }
 
 function AlertDialog({
+  visible,
   opts,
   onDismiss,
 }: {
+  visible: boolean;
   opts: AlertOptions | null;
   onDismiss: () => void;
 }) {
   return (
     <BaseDialog
-      visible={opts !== null}
+      visible={visible}
       title={opts?.title ?? ''}
       message={opts?.message ?? ''}
       onRequestClose={onDismiss}
@@ -102,32 +106,46 @@ const ConfirmCtx = createContext<Ctx | null>(null);
 
 export function ConfirmProvider({ children }: { children: React.ReactNode }) {
   const [confirmOpts, setConfirmOpts] = useState<ConfirmOptions | null>(null);
+  const [confirmVisible, setConfirmVisible] = useState(false);
   const [alertOpts, setAlertOpts] = useState<AlertOptions | null>(null);
+  const [alertVisible, setAlertVisible] = useState(false);
 
-  const confirm = useCallback((opts: ConfirmOptions) => setConfirmOpts(opts), []);
-  const alert = useCallback((opts: AlertOptions) => setAlertOpts(opts), []);
+  const confirm = useCallback((opts: ConfirmOptions) => {
+    setConfirmOpts(opts);
+    setConfirmVisible(true);
+  }, []);
 
+  const alert = useCallback((opts: AlertOptions) => {
+    setAlertOpts(opts);
+    setAlertVisible(true);
+  }, []);
+
+  // Solo cerramos visibilidad; el contenido (opts) se mantiene para que durante
+  // el fade-out del Modal no parpadeen labels ni el estilo destructive.
   const handleConfirm = async () => {
-    const current = confirmOpts;
-    setConfirmOpts(null);
-    if (current) await current.onConfirm();
+    setConfirmVisible(false);
+    if (confirmOpts) await confirmOpts.onConfirm();
   };
 
   const handleDismiss = async () => {
-    const current = alertOpts;
-    setAlertOpts(null);
-    if (current?.onDismiss) await current.onDismiss();
+    setAlertVisible(false);
+    if (alertOpts?.onDismiss) await alertOpts.onDismiss();
   };
 
   return (
     <ConfirmCtx.Provider value={{ confirm, alert }}>
       {children}
       <ConfirmDialog
+        visible={confirmVisible}
         opts={confirmOpts}
         onConfirm={handleConfirm}
-        onCancel={() => setConfirmOpts(null)}
+        onCancel={() => setConfirmVisible(false)}
       />
-      <AlertDialog opts={alertOpts} onDismiss={handleDismiss} />
+      <AlertDialog
+        visible={alertVisible}
+        opts={alertOpts}
+        onDismiss={handleDismiss}
+      />
     </ConfirmCtx.Provider>
   );
 }

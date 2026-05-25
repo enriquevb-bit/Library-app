@@ -1,10 +1,16 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 import { UserRole } from '@/types';
 
-const AUTH_SERVER_URL = Platform.OS === 'android'
-  ? 'http://10.0.2.2:9000'
-  : 'http://localhost:9000';
+const extra = (Constants.expoConfig?.extra ?? {}) as { authUrl?: string };
+
+// En prod la URL viene de app.json (extra.authUrl); en local, fallback por plataforma.
+const AUTH_SERVER_URL = extra.authUrl
+  ? extra.authUrl
+  : Platform.OS === 'android'
+    ? 'http://10.0.2.2:9000'
+    : 'http://localhost:9000';
 
 const CLIENT_ID = 'oidc-client';
 const CLIENT_SECRET = 'secret';

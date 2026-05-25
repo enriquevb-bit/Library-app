@@ -1,23 +1,35 @@
 import { useEffect, useState } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { Redirect } from 'expo-router';
-import { getToken } from '@/services/auth';
+import { getToken, getStoredRole } from '@/services/auth';
+import { UserRole } from '@/types';
 import { colors } from '@/constants/theme';
 
+type Destination = '/login' | '/(admin)/(tabs)/home' | '/(member)/(tabs)/home';
+
 export default function Index() {
-  const [hasToken, setHasToken] = useState<boolean | null>(null);
+  const [destination, setDestination] = useState<Destination | null>(null);
 
   useEffect(() => {
     let mounted = true;
-    getToken().then((token) => {
-      if (mounted) setHasToken(!!token);
-    });
+    (async () => {
+      const token = await getToken();
+      if (!token) {
+        if (mounted) setDestination('/login');
+        return;
+      }
+      const role: UserRole | null = await getStoredRole();
+      if (!mounted) return;
+      if (role === 'ADMIN') setDestination('/(admin)/(tabs)/home');
+      else if (role === 'MEMBER') setDestination('/(member)/(tabs)/home');
+      else setDestination('/login');
+    })();
     return () => {
       mounted = false;
     };
   }, []);
 
-  if (hasToken === null) {
+  if (destination === null) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color={colors.primary} />
@@ -25,7 +37,7 @@ export default function Index() {
     );
   }
 
-  return hasToken ? <Redirect href="/(tabs)/home" /> : <Redirect href="/login" />;
+  return <Redirect href={destination} />;
 }
 
 const styles = StyleSheet.create({
