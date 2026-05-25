@@ -21,7 +21,7 @@ export interface AuthorDTO {
   id?: string;
   version?: number;
   fullName: string;
-  nationality?: string;
+  country?: string;
   birthDate?: string;
 }
 

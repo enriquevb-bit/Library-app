@@ -117,7 +117,7 @@ export default function AdminBookDetailScreen() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.value}>{a.fullName}</Text>
-                  {a.nationality && <Text style={styles.authorDetail}>{a.nationality}</Text>}
+                  {a.country && <Text style={styles.authorDetail}>{a.country}</Text>}
                 </View>
               </View>
             ))}

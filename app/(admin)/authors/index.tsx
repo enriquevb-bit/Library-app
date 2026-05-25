@@ -64,7 +64,7 @@ export default function AuthorsScreen() {
       </View>
       <View style={styles.cardContent}>
         <Text style={styles.cardTitle} numberOfLines={1}>{item.fullName}</Text>
-        {item.nationality && <Text style={styles.cardSub}>{item.nationality}</Text>}
+        {item.country && <Text style={styles.cardSub}>{item.country}</Text>}
         {item.birthDate && <Text style={styles.cardSub}>{item.birthDate}</Text>}
       </View>
       <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />

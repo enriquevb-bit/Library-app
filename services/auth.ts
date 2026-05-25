@@ -1,16 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
-import Constants from 'expo-constants';
+import { getEndpoints } from '@/config/api';
 import { UserRole } from '@/types';
-
-const extra = (Constants.expoConfig?.extra ?? {}) as { authUrl?: string };
-
-// En prod la URL viene de app.json (extra.authUrl); en local, fallback por plataforma.
-const AUTH_SERVER_URL = extra.authUrl
-  ? extra.authUrl
-  : Platform.OS === 'android'
-    ? 'http://10.0.2.2:9000'
-    : 'http://localhost:9000';
 
 const CLIENT_ID = 'oidc-client';
 const CLIENT_SECRET = 'secret';
@@ -65,7 +55,8 @@ export async function login(email: string, password: string): Promise<UserRole> 
 
   const body = `grant_type=password&username=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&scope=openid`;
 
-  const response = await fetch(`${AUTH_SERVER_URL}/oauth2/token`, {
+  const { auth } = await getEndpoints();
+  const response = await fetch(`${auth}/oauth2/token`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',

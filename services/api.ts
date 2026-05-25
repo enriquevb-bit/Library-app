@@ -3,7 +3,7 @@
 // consume la app MEMBER (rutas /me/...). Refleja la separación entre los
 // controllers Spring del backend (LoanController vs MeController).
 
-import { API_BASE_URL } from '@/config/api';
+import { getEndpoints } from '@/config/api';
 import { getToken } from '@/services/auth';
 import {
   BookDTO,
@@ -40,7 +40,8 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   if (!token) {
     throw new Error('No autenticado');
   }
-  const url = `${API_BASE_URL}${endpoint}`;
+  const { api } = await getEndpoints();
+  const url = `${api}${endpoint}`;
   const response = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
@@ -82,7 +83,8 @@ async function createRequest(endpoint: string, body: unknown): Promise<string | 
   if (!token) {
     throw new Error('No autenticado');
   }
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const { api } = await getEndpoints();
+  const response = await fetch(`${api}${endpoint}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -138,7 +140,7 @@ export async function deleteBook(id: string): Promise<void> {
 
 export async function getAuthors(params?: {
   fullName?: string;
-  nationality?: string;
+  country?: string;
   pageNumber?: number;
   pageSize?: number;
 }): Promise<PageResponse<AuthorDTO>> {

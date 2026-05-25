@@ -74,7 +74,7 @@ export default function BookFormScreen() {
 
   const loadAuthorOptions = async (search: string): Promise<SelectOption[]> => {
     const data = await getAuthors({ fullName: search || undefined, pageSize: 100 });
-    return data.content.map(a => ({ id: a.id!, label: a.fullName, sublabel: a.nationality }));
+    return data.content.map(a => ({ id: a.id!, label: a.fullName, sublabel: a.country }));
   };
 
   const loadGenreOptions = async (search: string): Promise<SelectOption[]> => {

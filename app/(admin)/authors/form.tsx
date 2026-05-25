@@ -29,7 +29,7 @@ export default function AuthorFormScreen() {
   const { alert } = useConfirm();
 
   const [fullName, setFullName] = useState('');
-  const [nationality, setNationality] = useState('');
+  const [country, setCountry] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [version, setVersion] = useState<number | undefined>();
   const [loading, setLoading] = useState(false);
@@ -43,7 +43,7 @@ export default function AuthorFormScreen() {
     try {
       const author = await getAuthor(id!);
       setFullName(author.fullName);
-      setNationality(author.nationality || '');
+      setCountry(author.country || '');
       setBirthDate(author.birthDate || '');
       setVersion(author.version);
     } catch {
@@ -68,7 +68,7 @@ export default function AuthorFormScreen() {
 
     const author: AuthorDTO = {
       fullName: fullName.trim(),
-      nationality: nationality.trim() || undefined,
+      country: country.trim() || undefined,
       birthDate: trimmedDate || undefined,
       version,
     };
@@ -93,8 +93,8 @@ export default function AuthorFormScreen() {
         <Text style={styles.label}>Nombre completo *</Text>
         <TextInput style={styles.input} value={fullName} onChangeText={setFullName} placeholder="J.R.R. Tolkien" placeholderTextColor={colors.textMuted} maxLength={50} />
 
-        <Text style={styles.label}>Nacionalidad</Text>
-        <TextInput style={styles.input} value={nationality} onChangeText={setNationality} placeholder="Británico" placeholderTextColor={colors.textMuted} />
+        <Text style={styles.label}>País</Text>
+        <TextInput style={styles.input} value={country} onChangeText={setCountry} placeholder="Reino Unido" placeholderTextColor={colors.textMuted} />
 
         <Text style={styles.label}>Fecha de nacimiento</Text>
         <TextInput style={styles.input} value={birthDate} onChangeText={setBirthDate} placeholder="YYYY-MM-DD" placeholderTextColor={colors.textMuted} maxLength={10} />

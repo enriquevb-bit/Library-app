@@ -75,7 +75,7 @@ export default function AuthorDetailScreen() {
       </View>
 
       <View style={styles.section}>
-        <DetailRow label="Nacionalidad" value={author.nationality || 'N/A'} />
+        <DetailRow label="País" value={author.country || 'N/A'} />
         <DetailRow label="Fecha de nacimiento" value={author.birthDate || 'N/A'} />
       </View>
 
